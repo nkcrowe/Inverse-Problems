@@ -29,8 +29,8 @@ if st.session_state.get('fig') is not None:
     st.subheader("Summary")
 
     c1, c2, c3, c4 = st.columns(4)
-    c1.metric("Max Simulated Price", f"${st.session_state.S_t[:, -1].max():,.2f}")
-    c2.metric("Min Simulated Price", f"${st.session_state.S_t[:, -1].min():,.2f}")
+    c1.metric("Max Simulated Price", f"${st.session_state.S_t[:(int(M/100)), -1].max():,.2f}")
+    c2.metric("Min Simulated Price", f"${st.session_state.S_t[:(int(M/100)), -1].min():,.2f}")
     c3.metric("Mean Simulated Price", f"${st.session_state.S_t[:, -1].mean():,.2f}")
     c4.metric("Analytical E[Sₜ]", f"${st.session_state.analytic_mean[-1]:,.2f}")
 
