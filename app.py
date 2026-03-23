@@ -1,6 +1,7 @@
 import streamlit as st
 import yfinance as yf
 import gbm_simulation
+from gbm_simulation import analy_mean
 
 st.set_page_config(page_title = "Geometric Brownian Motion", page_icon = "📈", layout = "wide")
 st.title("Geometric Brownian Motion Simulator")
@@ -18,9 +19,18 @@ with st.sidebar:
 if update:
     with st.spinner("Simulating..."):
         S_t = gbm_simulation.simulate_gbm(S0=S0, mu=mu, sigma=sigma, T=T, N=252, M=M)
-    st.session_state.fig = gbm_simulation.plot_paths(S_t, T, S0, mu, sigma, M)
+
+    st.session_state.fig, time = gbm_simulation.plot_paths(S_t, T, S0, mu, sigma, M)
+    analytic_mean = analy_mean(S0, mu, time)
 
 if st.session_state.get('fig') is not None:
-    st.plotly_chart(st.session_state.fig, use_container_width=True)
+    st.subheader("Summary")
+
+    c1, c2, c3, c4 = st.columns(4)
+    c1.metric("Max Simulated Price", max(S_t[:,-1]))
+    c2.metric("Min Simulated Price", min(S_t[:, -1]))
+    c3.metric("Mean Simulated Price", analytic_mean[-1])
+
+    st.plotly_chart(st.session_state.fig, use_container_width=True) #display plot
 else:
     st.info("Set parameters in the sidebar and click Update to run the simulation.")

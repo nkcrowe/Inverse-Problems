@@ -25,6 +25,7 @@ def sigma_band(S0, mu, sigma, time):
     return std
 
 def plot_paths(S_t, T, S0, mu, sigma, M):
+    #upper and lower bound of analytic mean using std
     time = np.linspace(0, T, S_t.shape[1])
     analytic_mean = analy_mean(S0, mu, time)
     std = sigma_band(S0, mu, sigma, time)
@@ -82,4 +83,4 @@ def plot_paths(S_t, T, S0, mu, sigma, M):
         margin=dict(l=60, r=40, t=60, b=60)
     )
 
-    return fig
+    return fig, time
