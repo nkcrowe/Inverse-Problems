@@ -27,8 +27,8 @@ def sigma_band(S0, mu, sigma, time):
 def plot_paths(S_t, T, S0, mu, sigma):
     time = np.linspace(0, T, S_t.shape[1])
     fig, ax = plt.subplots()
-    for path in S_t[:100]:
-        ax.plot(time, path, color='steelblue', alpha=0.1)
+    for path in S_t[:50]:
+        ax.plot(time, path, color='steelblue', alpha=0.2)
 
     analytic_mean = analy_mean(S0, mu, time)
     std = sigma_band(S0, mu, sigma, time)
