@@ -66,7 +66,7 @@ def plot_paths(S_t, T, S0, mu, sigma):
         x=time, y=analytic_mean,
         mode='lines',
         line=dict(color='red', width=2),
-        name='E[S_t] = S₀e^μt'
+        name='E[Sₜ] = S₀e^μt'
     ))
 
     fig.update_layout(
