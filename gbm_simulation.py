@@ -24,7 +24,7 @@ def sigma_band(S0, mu, sigma, time):
 
     return std
 
-def plot_paths(S_t, T, S0, mu, sigma):
+def plot_paths(S_t, T, S0, mu, sigma, M):
     time = np.linspace(0, T, S_t.shape[1])
     analytic_mean = analy_mean(S0, mu, time)
     std = sigma_band(S0, mu, sigma, time)
@@ -34,7 +34,7 @@ def plot_paths(S_t, T, S0, mu, sigma):
 
     fig = go.Figure()
 
-    for path in S_t[:100]:
+    for path in S_t[:(M/100)]:
         fig.add_trace(go.Scatter(
             x=time, y=path,
             mode='lines',
