@@ -25,8 +25,7 @@ def sigma_band(S0, mu, sigma, time):
     return std
 
 def plot_paths(S_t, T, S0, mu, sigma):
-    plt.style.use('dark_background')
-
+    
     time = np.linspace(0, T, S_t.shape[1])
     fig, ax = plt.subplots()
     for path in S_t[:50]:
