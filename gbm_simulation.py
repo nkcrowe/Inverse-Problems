@@ -83,4 +83,4 @@ def plot_paths(S_t, T, S0, mu, sigma, M):
         margin=dict(l=60, r=40, t=60, b=60)
     )
 
-    return fig, time
+    return fig
