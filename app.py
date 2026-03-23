@@ -18,7 +18,7 @@ with st.sidebar:
 if update:
     with st.spinner("Simulating..."):
         S_t = gbm_simulation.simulate_gbm(S0=S0, mu=mu, sigma=sigma, T=T, N=252, M=M)
-    st.session_state.fig = gbm_simulation.plot_paths(S_t, T, S0, mu, sigma)
+    st.session_state.fig = gbm_simulation.plot_paths(S_t, T, S0, mu, sigma, M)
 
 if st.session_state.get('fig') is not None:
     st.plotly_chart(st.session_state.fig, use_container_width=True)
