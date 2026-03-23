@@ -15,12 +15,12 @@ with st.sidebar:
 
     update = st.button("Update", type="primary", use_container_width=True)
 
-
-
 if update:
     with st.spinner("Simulating..."):
-        S_t = gbm_simulation.simulate_gbm(S0 = S0, mu = mu, sigma = sigma, T = T, N = 252, M = M)
-    fig = gbm_simulation.plot_paths(S_t, T, S0, mu, sigma)
-    st.pyplot(fig)
+        S_t = gbm_simulation.simulate_gbm(S0=S0, mu=mu, sigma=sigma, T=T, N=252, M=M)
+    st.session_state.fig = gbm_simulation.plot_paths(S_t, T, S0, mu, sigma)
+
+if st.session_state.fig is not None:
+    st.pyplot(st.session_state.fig)
 else:
     st.info("Set parameters in the sidebar and click Update to run the simulation.")
