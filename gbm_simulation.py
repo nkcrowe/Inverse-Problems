@@ -34,7 +34,7 @@ def plot_paths(S_t, T, S0, mu, sigma, M):
 
     fig = go.Figure()
 
-    for path in S_t[:(M/100)]:
+    for path in S_t[:(int(M/100))]:
         fig.add_trace(go.Scatter(
             x=time, y=path,
             mode='lines',
