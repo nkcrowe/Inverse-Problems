@@ -39,7 +39,7 @@ def plot_paths(S_t, T, S0, mu, sigma):
             x=time, y=path,
             mode='lines',
             line=dict(color='steelblue', width=0.5),
-            opacity=0.15,
+            opacity=0.25,
             showlegend=False,
             hoverinfo='skip'
         ))
