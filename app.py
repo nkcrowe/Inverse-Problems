@@ -21,6 +21,6 @@ if update:
     st.session_state.fig = gbm_simulation.plot_paths(S_t, T, S0, mu, sigma)
 
 if st.session_state.get('fig') is not None:
-    st.pyplot(st.session_state.fig)
+    st.plotly_chart(st.session_state.fig, use_container_width=True)
 else:
     st.info("Set parameters in the sidebar and click Update to run the simulation.")

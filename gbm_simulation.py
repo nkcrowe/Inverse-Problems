@@ -1,5 +1,5 @@
 import numpy as np
-import matplotlib.pyplot as plt
+import plotly.graph_objects as go
 
 def simulate_gbm(S0, mu, sigma, T, N, M):
     N = int(N * T) #N = trading days * years
@@ -25,23 +25,61 @@ def sigma_band(S0, mu, sigma, time):
     return std
 
 def plot_paths(S_t, T, S0, mu, sigma):
-    plt.style.use('dark_background')
     time = np.linspace(0, T, S_t.shape[1])
-    fig, ax = plt.subplots()
-    for path in S_t[:50]:
-        ax.plot(time, path, color='steelblue', alpha=0.2)
-
     analytic_mean = analy_mean(S0, mu, time)
     std = sigma_band(S0, mu, sigma, time)
 
-    add = analytic_mean + std
-    sub = analytic_mean - std
+    upper = analytic_mean + std
+    lower = analytic_mean - std
 
-    ax.plot(time, analytic_mean, color='red', linewidth=2, label = "analytic mean")
-    ax.plot(time, add, color='red', linewidth=1, linestyle='--', label = "±1σ band")
-    ax.plot(time, sub, color='red', linewidth=1, linestyle='--')
+    fig = go.Figure()
 
-    ax.set_xlabel("Time (Years)")
-    ax.set_ylabel("Price")
-    ax.legend()
+    for path in S_t[:100]:
+        fig.add_trace(go.Scatter(
+            x=time, y=path,
+            mode='lines',
+            line=dict(color='steelblue', width=0.5),
+            opacity=0.15,
+            showlegend=False,
+            hoverinfo='skip'
+        ))
+
+    fig.add_trace(go.Scatter(
+        x=time, y=lower,
+        mode='lines',
+        line=dict(color='rgba(255,165,0,0)'),
+        showlegend=False,
+        hoverinfo='skip'
+    ))
+
+    fig.add_trace(go.Scatter(
+        x=time, y=upper,
+        mode='lines',
+        fill='tonexty',
+        fillcolor='rgba(255,165,0,0.15)',
+        line=dict(color='rgba(255,165,0,0)'),
+        name='±1σ band',
+        hoverinfo='skip'
+    ))
+
+    fig.add_trace(go.Scatter(
+        x=time, y=analytic_mean,
+        mode='lines',
+        line=dict(color='red', width=2),
+        name='E[S_t] = S₀e^μt'
+    ))
+
+    fig.update_layout(
+        title='Geometric Brownian Motion Simulation',
+        xaxis_title='Time (years)',
+        yaxis_title='Price',
+        yaxis_tickprefix='$',
+        yaxis_tickformat=',.0f',
+        template='plotly_dark',
+        height=550,
+        legend=dict(x=0.01, y=0.99),
+        hovermode='x unified',
+        margin=dict(l=60, r=40, t=60, b=60)
+    )
+
     return fig
