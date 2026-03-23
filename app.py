@@ -9,7 +9,7 @@ with st.sidebar:
     st.header("Parameters")
     S0 = st.slider("Starting Price", 50, 250, 100)
     mu = st.slider("Drift", 0.0,1.0,0.1)
-    sigma = st.slider("Volatility", 0.0,1,0,0.2)
+    sigma = st.slider("Volatility", 0.0,1.0,0.2)
     T = st.slider("Total Time (years)",1,25,10)
     M = st.slider("Paths",1000,10000,5000)
 
