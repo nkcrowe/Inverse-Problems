@@ -1,4 +1,7 @@
-# Inverse Problems: Stochastic Optimal Stopping & Volatility Surface Calibration
+---
+layout: default
+title: Inverse Problems: Stochastic Optimal Stopping & Volatility Surface Calibration
+---
 ## Brownian Motion – Family of Random Variables Defined on a Common Probability Space
 
 ### Brownian motion ($W_t$) is a random process satisfying:
