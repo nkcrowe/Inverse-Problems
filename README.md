@@ -10,6 +10,6 @@ Brownian motion ($W_t$) is a random process satisfying:
 
 Increment $\Delta W$ = $W_{t+\Delta t} - W_t$ 
           $\Delta W$ ~ N(0, Δt) <br />
-           * the size of $\Delta W$ can be approximated to be the standard deviation <br />
-           * so ΔW ~ $\sqrt{Δt}$ <br />
+            * the size of $\Delta W$ can be approximated to be the standard deviation <br />
+            * so ΔW ~ $\sqrt{Δt}$ <br />
           
