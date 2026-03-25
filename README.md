@@ -8,8 +8,8 @@ Brownian motion ($W_t$) is a random process satisfying:
   3. increments are independent
   4. $W_t$ is continuous
 
-Increment $\Delta W$ = $W_{t+\Delta t} - W_t$
+Increment $\Delta W$ = $W_{t+\Delta t} - W_t$ 
           $\Delta W$ ~ N(0, Δt) 
-          the size of $\Delta W$ can be approximated to be the standard deviation
-          so ΔW ~ $\sqrt{Δt}$
+          the size of $\Delta W$ can be approximated to be the standard deviation 
+          so ΔW ~ $\sqrt{Δt}$ 
           
