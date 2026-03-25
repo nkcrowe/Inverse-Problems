@@ -9,7 +9,7 @@ Brownian motion ($W_t$) is a random process satisfying:
   4. $W_t$ is continuous
 
 Increment $\Delta W$ = $W_{t+\Delta t} - W_t$ 
-          $\Delta W$ ~ N(0, Δt) 
-          the size of $\Delta W$ can be approximated to be the standard deviation 
-          so ΔW ~ $\sqrt{Δt}$ 
+          $\Delta W$ ~ N(0, Δt) <br />
+          the size of $\Delta W$ can be approximated to be the standard deviation <br />
+          so ΔW ~ $\sqrt{Δt}$ <br />
           
