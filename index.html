@@ -1,0 +1,715 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Stochastic Optimal Stopping & Volatility Calibration — Nick Kyriakides-Crowe</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;1,400&family=DM+Mono:wght@300;400&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --ink: #1a1814;
+    --ink-light: #6b6760;
+    --ink-faint: #c2bfb8;
+    --paper: #f7f5f0;
+    --paper-warm: #efece4;
+    --accent: #2a4a7f;
+    --accent-faint: rgba(42,74,127,0.07);
+    --accent-mid: rgba(42,74,127,0.15);
+    --rule: rgba(26,24,20,0.12);
+    --rule-strong: rgba(26,24,20,0.22);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+
+  body {
+    font-family: 'EB Garamond', Georgia, serif;
+    background: var(--paper);
+    color: var(--ink);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
+    pointer-events: none;
+    z-index: 0;
+    opacity: 0.6;
+  }
+
+  .wrap {
+    position: relative;
+    z-index: 1;
+    max-width: 720px;
+    margin: 0 auto;
+    padding: 0 2rem;
+  }
+
+  /* ── nav ── */
+  .topnav {
+    padding: 1.5rem 0;
+    border-bottom: 0.5px solid var(--rule);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    animation: fadeUp 0.5s ease both;
+  }
+
+  .topnav a {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.7rem;
+    font-weight: 300;
+    letter-spacing: 0.07em;
+    text-transform: uppercase;
+    color: var(--ink-light);
+    text-decoration: none;
+    border-bottom: 0.5px solid var(--ink-faint);
+    padding-bottom: 1px;
+    transition: color 0.2s, border-color 0.2s;
+  }
+
+  .topnav a:hover { color: var(--accent); border-color: var(--accent); }
+
+  .topnav-right { display: flex; gap: 1.5rem; }
+
+  /* ── header ── */
+  header {
+    padding: 4rem 0 3rem;
+    border-bottom: 0.5px solid var(--rule);
+    animation: fadeUp 0.6s ease both;
+    animation-delay: 0.05s;
+  }
+
+  .status-row {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 1.2rem;
+  }
+
+  .status-badge {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.62rem;
+    font-weight: 400;
+    letter-spacing: 0.07em;
+    text-transform: uppercase;
+    color: #8a6a2a;
+    background: #f5ead8;
+    border: 0.5px solid rgba(138,106,42,0.3);
+    border-radius: 2px;
+    padding: 2px 8px;
+  }
+
+  .status-date {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.68rem;
+    font-weight: 300;
+    color: var(--ink-faint);
+  }
+
+  h1 {
+    font-size: clamp(1.7rem, 4vw, 2.4rem);
+    font-weight: 400;
+    line-height: 1.2;
+    letter-spacing: -0.01em;
+    margin-bottom: 1rem;
+  }
+
+  h1 em { font-style: italic; color: var(--accent); }
+
+  .header-summary {
+    font-size: 1.05rem;
+    line-height: 1.8;
+    color: var(--ink-light);
+    max-width: 600px;
+    margin-bottom: 1.75rem;
+  }
+
+  .header-meta {
+    display: flex;
+    gap: 2rem;
+    flex-wrap: wrap;
+  }
+
+  .meta-item {}
+
+  .meta-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.62rem;
+    font-weight: 300;
+    letter-spacing: 0.09em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    display: block;
+    margin-bottom: 0.2rem;
+  }
+
+  .meta-value {
+    font-size: 0.9rem;
+    color: var(--ink-light);
+  }
+
+  /* ── sections ── */
+  section {
+    padding: 3rem 0;
+    border-bottom: 0.5px solid var(--rule);
+    animation: fadeUp 0.6s ease both;
+  }
+
+  section:last-of-type { border-bottom: none; }
+
+  .section-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.68rem;
+    font-weight: 400;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    margin-bottom: 1.75rem;
+  }
+
+  /* ── prose ── */
+  .prose { font-size: 1.05rem; line-height: 1.85; color: var(--ink); }
+  .prose p + p { margin-top: 1rem; }
+  .prose em { font-style: italic; }
+  .prose strong { font-weight: 500; }
+
+  /* ── analogy table ── */
+  .analogy-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 1.75rem 0;
+    font-size: 0.93rem;
+  }
+
+  .analogy-table thead tr {
+    border-bottom: 0.5px solid var(--rule-strong);
+  }
+
+  .analogy-table th {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.65rem;
+    font-weight: 400;
+    letter-spacing: 0.09em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    padding: 0 1rem 0.75rem 0;
+    text-align: left;
+  }
+
+  .analogy-table th:last-child { padding-right: 0; }
+
+  .analogy-table td {
+    padding: 0.75rem 1rem 0.75rem 0;
+    vertical-align: top;
+    border-bottom: 0.5px solid var(--rule);
+    color: var(--ink-light);
+    line-height: 1.5;
+  }
+
+  .analogy-table td:last-child { padding-right: 0; }
+
+  .analogy-table tr:last-child td { border-bottom: none; }
+
+  .analogy-table td:first-child { color: var(--ink); font-weight: 500; }
+
+  /* ── phases ── */
+  .phase-list { display: flex; flex-direction: column; gap: 0; }
+
+  .phase {
+    display: grid;
+    grid-template-columns: 56px 1fr;
+    gap: 1.25rem;
+    padding: 1.5rem 0;
+    border-top: 0.5px solid var(--rule);
+  }
+
+  .phase:first-child { border-top: none; }
+
+  .phase-num {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.65rem;
+    font-weight: 300;
+    letter-spacing: 0.07em;
+    color: var(--ink-faint);
+    padding-top: 3px;
+    text-transform: uppercase;
+  }
+
+  .phase-body {}
+
+  .phase-title {
+    font-size: 1rem;
+    font-weight: 500;
+    margin-bottom: 0.3rem;
+    line-height: 1.3;
+  }
+
+  .phase-weeks {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.63rem;
+    font-weight: 300;
+    color: var(--ink-faint);
+    margin-bottom: 0.6rem;
+  }
+
+  .phase-desc {
+    font-size: 0.93rem;
+    color: var(--ink-light);
+    line-height: 1.65;
+  }
+
+  .phase-deliverables {
+    display: flex;
+    gap: 0.45rem;
+    flex-wrap: wrap;
+    margin-top: 0.6rem;
+  }
+
+  .deliv {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.62rem;
+    font-weight: 300;
+    letter-spacing: 0.04em;
+    padding: 2px 7px;
+    border-radius: 2px;
+    border: 0.5px solid;
+  }
+
+  .deliv-learn {
+    color: #0c447c;
+    background: #e6f1fb;
+    border-color: rgba(24,95,165,0.3);
+  }
+
+  .deliv-derive {
+    color: #633806;
+    background: #faeeda;
+    border-color: rgba(186,117,23,0.3);
+  }
+
+  .deliv-code {
+    color: #27500a;
+    background: #eaf3de;
+    border-color: rgba(63,109,17,0.3);
+  }
+
+  /* ── callout ── */
+  .callout {
+    background: var(--accent-faint);
+    border: 0.5px solid var(--accent-mid);
+    border-radius: 4px;
+    padding: 1.25rem 1.5rem;
+    margin: 1.75rem 0;
+  }
+
+  .callout-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.63rem;
+    font-weight: 400;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 0.5rem;
+    opacity: 0.7;
+  }
+
+  .callout p {
+    font-size: 0.98rem;
+    line-height: 1.75;
+    color: var(--ink-light);
+  }
+
+  .callout p em { color: var(--ink); font-style: italic; }
+
+  /* ── math block ── */
+  .math-block {
+    background: var(--paper-warm);
+    border: 0.5px solid var(--rule-strong);
+    border-radius: 4px;
+    padding: 1.25rem 1.5rem;
+    margin: 1.25rem 0;
+    font-family: 'DM Mono', monospace;
+    font-size: 0.82rem;
+    font-weight: 300;
+    line-height: 1.9;
+    color: var(--ink);
+    overflow-x: auto;
+  }
+
+  .math-block .comment {
+    color: var(--ink-faint);
+    font-size: 0.75rem;
+  }
+
+  /* ── stack list ── */
+  .stack-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .stack-row {
+    display: flex;
+    align-items: baseline;
+    gap: 1rem;
+    font-size: 0.93rem;
+    line-height: 1.5;
+  }
+
+  .stack-key {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.68rem;
+    font-weight: 300;
+    letter-spacing: 0.06em;
+    color: var(--ink-faint);
+    min-width: 100px;
+    text-transform: uppercase;
+  }
+
+  .stack-val { color: var(--ink-light); }
+
+  /* ── footer ── */
+  footer {
+    padding: 2.5rem 0 4rem;
+    animation: fadeUp 0.6s ease both;
+  }
+
+  .footer-inner {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 1rem;
+  }
+
+  .footer-note {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.68rem;
+    font-weight: 300;
+    letter-spacing: 0.05em;
+    color: var(--ink-faint);
+  }
+
+  .footer-link {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.68rem;
+    font-weight: 300;
+    letter-spacing: 0.05em;
+    color: var(--ink-light);
+    text-decoration: none;
+    border-bottom: 0.5px solid var(--ink-faint);
+    padding-bottom: 1px;
+    transition: color 0.2s, border-color 0.2s;
+  }
+
+  .footer-link:hover { color: var(--accent); border-color: var(--accent); }
+
+  /* ── animation ── */
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(12px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  .topnav  { animation-delay: 0s; }
+  header   { animation-delay: 0.06s; }
+  section:nth-of-type(1) { animation-delay: 0.12s; }
+  section:nth-of-type(2) { animation-delay: 0.18s; }
+  section:nth-of-type(3) { animation-delay: 0.22s; }
+  section:nth-of-type(4) { animation-delay: 0.26s; }
+  section:nth-of-type(5) { animation-delay: 0.30s; }
+  footer   { animation-delay: 0.34s; }
+
+  @media (max-width: 520px) {
+    .phase { grid-template-columns: 40px 1fr; }
+    .header-meta { gap: 1.25rem; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <nav class="topnav">
+    <a href="https://nkcrowe.github.io/portfolio/">← Nick Kyriakides-Crowe</a>
+    <div class="topnav-right">
+      <a href="https://github.com/nkcrowe/stochastic-vol-calibration" target="_blank">GitHub ↗</a>
+
+    </div>
+  </nav>
+
+  <header>
+    <div class="status-row">
+      <span class="status-badge">In progress</span>
+      <span class="status-date">Jan 2026 — present</span>
+    </div>
+    <h1>Stochastic Optimal Stopping<br>&amp; <em>Volatility Surface Calibration</em></h1>
+    <p class="header-summary">A 14-week independent study implementing Longstaff-Schwartz Monte Carlo for American option pricing and Tikhonov-regularized volatility surface calibration — framed as a regularized inverse problem structurally analogous to CT image reconstruction.</p>
+    <div class="header-meta">
+      <div class="meta-item">
+        <span class="meta-label">Duration</span>
+        <span class="meta-value">14 weeks · 6 phases</span>
+      </div>
+      <div class="meta-item">
+        <span class="meta-label">Stack</span>
+        <span class="meta-value">Python · NumPy · SciPy · Matplotlib</span>
+      </div>
+      <div class="meta-item">
+        <span class="meta-label">Context</span>
+        <span class="meta-value">Independent · USC Applied Mathematics MS</span>
+      </div>
+    </div>
+  </header>
+
+  <!-- MOTIVATION -->
+  <section>
+    <div class="section-label">Motivation</div>
+    <div class="prose">
+      <p>The Black-Scholes model assumes constant volatility — but market option prices imply a volatility that varies systematically across strikes and maturities, producing the well-known <em>volatility smile</em>. Recovering a consistent volatility surface from observed prices is an inverse problem: given noisy output data, infer the underlying parameters of the model.</p>
+      <p>This is structurally identical to a class of problems I encountered in biomedical engineering. In CT image reconstruction, the goal is to recover a 2D attenuation map from a set of 1D line-integral projections (the sinogram). Both problems are <em>ill-posed</em> in Hadamard's sense — small perturbations in the data can produce large, unstable changes in the recovered solution — and both require regularization to be tractable.</p>
+    </div>
+
+    <div class="callout">
+      <div class="callout-label">Core analogy</div>
+      <p>CT reconstruction inverts the Radon transform to recover an image from projections. Volatility calibration inverts the Black-Scholes pricing map to recover a surface from option prices. Both amplify noise through numerical differentiation, and both are stabilized by the same class of regularization techniques — <em>Tikhonov (L2) and total variation (L1 on gradient)</em>.</p>
+    </div>
+
+    <table class="analogy-table">
+      <thead>
+        <tr>
+          <th>Concept</th>
+          <th>CT Reconstruction</th>
+          <th>Volatility Calibration</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Forward operator</td>
+          <td>Radon transform ℛ</td>
+          <td>Black-Scholes pricing map BS(σ)</td>
+        </tr>
+        <tr>
+          <td>Observed data</td>
+          <td>Sinogram projections</td>
+          <td>Market option prices</td>
+        </tr>
+        <tr>
+          <td>Unknown</td>
+          <td>Attenuation image f(x,y)</td>
+          <td>Volatility surface σ(K,T)</td>
+        </tr>
+        <tr>
+          <td>Source of instability</td>
+          <td>Ramp filter amplifies high-frequency noise</td>
+          <td>∂²C/∂K² amplifies price noise</td>
+        </tr>
+        <tr>
+          <td>Regularization</td>
+          <td>Apodization, Tikhonov, TV</td>
+          <td>Tikhonov on ∥∇σ∥², total variation</td>
+        </tr>
+        <tr>
+          <td>Parameter selection</td>
+          <td>L-curve, discrepancy principle</td>
+          <td>L-curve on (fit error, surface roughness)</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <!-- STRUCTURE -->
+  <section>
+    <div class="section-label">Project Structure</div>
+    <div class="phase-list">
+
+      <div class="phase">
+        <div class="phase-num">Phase 01</div>
+        <div class="phase-body">
+          <div class="phase-title">Probability & Stochastic Process Foundations</div>
+          <div class="phase-weeks">Weeks 1–2</div>
+          <div class="phase-desc">Probability spaces, σ-algebras, filtrations, conditional expectation, martingales, Brownian motion, quadratic variation, and Itô's lemma. Derivations of the GBM solution and Euler-Maruyama discretization. Vectorized GBM simulator with QQ-plot, KS-test, and weak convergence validation.</div>
+          <div class="phase-deliverables">
+            <span class="deliv deliv-derive">3 derivations</span>
+            <span class="deliv deliv-code">simulate_gbm()</span>
+            <span class="deliv deliv-code">convergence check</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="phase">
+        <div class="phase-num">Phase 02</div>
+        <div class="phase-body">
+          <div class="phase-title">Options Theory & Risk-Neutral Pricing</div>
+          <div class="phase-weeks">Weeks 3–4</div>
+          <div class="phase-desc">Risk-neutral measure, Black-Scholes formula derivation from the log-normal integral, put-call parity, Greeks, and implied volatility. Black-Scholes pricer and Newton-Raphson IV solver; IV smile plot across 20 strikes.</div>
+          <div class="phase-deliverables">
+            <span class="deliv deliv-derive">d1/d2 derivation</span>
+            <span class="deliv deliv-code">black_scholes()</span>
+            <span class="deliv deliv-code">implied_vol()</span>
+            <span class="deliv deliv-code">IV smile plot</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="phase">
+        <div class="phase-num">Phase 03</div>
+        <div class="phase-body">
+          <div class="phase-title">Optimal Stopping & Dynamic Programming</div>
+          <div class="phase-weeks">Weeks 5–6</div>
+          <div class="phase-desc">Bellman equation for the stopping problem, backward induction, CRR binomial tree. Derivation of American vs European put pricing inequality. Binomial pricer with early exercise boundary extraction and O(1/N) convergence verification.</div>
+          <div class="phase-deliverables">
+            <span class="deliv deliv-derive">2-step tree by hand</span>
+            <span class="deliv deliv-code">binomial_american()</span>
+            <span class="deliv deliv-code">exercise boundary S*(t)</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="phase">
+        <div class="phase-num">Phase 04</div>
+        <div class="phase-body">
+          <div class="phase-title">Longstaff-Schwartz Monte Carlo</div>
+          <div class="phase-weeks">Weeks 7–9</div>
+          <div class="phase-desc">Full read of Longstaff & Schwartz (2001). Least-squares regression of continuation values onto weighted Laguerre basis functions. Reproduction of Table 1 from the paper as a unit test. MC convergence at O(1/√M), finite-difference Greeks for the American put.</div>
+          <div class="phase-deliverables">
+            <span class="deliv deliv-derive">OLS normal equations</span>
+            <span class="deliv deliv-code">lsm_american()</span>
+            <span class="deliv deliv-code">Table 1 reproduction</span>
+            <span class="deliv deliv-code">Greeks via bump</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="phase">
+        <div class="phase-num">Phase 05</div>
+        <div class="phase-body">
+          <div class="phase-title">Inverse Problems & Volatility Surface Calibration</div>
+          <div class="phase-weeks">Weeks 10–12</div>
+          <div class="phase-desc">Ill-posedness conditions (Hadamard), Tikhonov regularization, Dupire's local volatility formula, and arbitrage constraints on the IV surface. Calibration via linearized least-squares with Jacobian (Vega) matrix. L-curve parameter selection. Comparison of Tikhonov vs total variation vs unregularized recovery on synthetic data.</div>
+          <div class="phase-deliverables">
+            <span class="deliv deliv-derive">Tikhonov normal eqs.</span>
+            <span class="deliv deliv-code">tikhonov_calibrate()</span>
+            <span class="deliv deliv-code">L-curve analysis</span>
+            <span class="deliv deliv-code">TV regularization</span>
+            <span class="deliv deliv-code">3D surface comparison</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="phase">
+        <div class="phase-num">Phase 06</div>
+        <div class="phase-body">
+          <div class="phase-title">Write-up & Packaging</div>
+          <div class="phase-weeks">Weeks 13–14</div>
+          <div class="phase-desc">4–6 page LaTeX technical write-up including the CT analogy table, L-curve figure, convergence plots, and surface comparison figures. GitHub README structured as a technical document. SOP paragraph connecting the two inverse problem domains.</div>
+          <div class="phase-deliverables">
+            <span class="deliv deliv-code">PDF paper (LaTeX)</span>
+            <span class="deliv deliv-code">GitHub README</span>
+            <span class="deliv deliv-code">SOP paragraph</span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- KEY METHODS -->
+  <section>
+    <div class="section-label">Key Methods</div>
+
+    <div class="prose">
+      <p><strong>Euler-Maruyama discretization.</strong> GBM paths are simulated using the first-order strong scheme. Validation against the analytical log-normal distribution via KS test and QQ-plot; weak convergence rate O(Δt) verified on log-log scale.</p>
+    </div>
+
+    <div class="math-block">
+S<sub>n+1</sub> = S<sub>n</sub> + μ·S<sub>n</sub>·Δt + σ·S<sub>n</sub>·√Δt · Z<sub>n</sub>,  &nbsp; Z<sub>n</sub> ~ N(0,1)
+<br><span class="comment">// vectorized across M paths simultaneously</span>
+    </div>
+
+    <div class="prose" style="margin-top: 1.5rem;">
+      <p><strong>Longstaff-Schwartz LSM.</strong> At each time step working backward from expiry, continuation values are approximated by OLS regression onto weighted Laguerre basis functions restricted to in-the-money paths. The exercise decision at each node follows from comparing the regression estimate to the immediate intrinsic value.</p>
+    </div>
+
+    <div class="math-block">
+<span class="comment">// continuation value regression at time t:</span>
+C(t, S) ≈ Σᵢ aᵢ · ψᵢ(S)
+<br>β = (ΨᵀΨ)⁻¹ Ψᵀ y  &nbsp; <span class="comment">// y = discounted future cashflows</span>
+<br>
+<span class="comment">// exercise if intrinsic > estimated continuation:</span>
+τ = min{ t : g(S<sub>t</sub>) ≥ C(t, S<sub>t</sub>) }
+    </div>
+
+    <div class="prose" style="margin-top: 1.5rem;">
+      <p><strong>Tikhonov calibration.</strong> The volatility surface is recovered by minimizing a penalized least-squares objective. The Jacobian is the Black-Scholes Vega matrix. The regularization term penalizes surface roughness via a finite-difference discretization of the gradient norm.</p>
+    </div>
+
+    <div class="math-block">
+min<sub>σ</sub>  ‖BS(σ) − C<sub>mkt</sub>‖² + λ·‖∇σ‖²
+<br>
+<span class="comment">// linearized solution:</span>
+σ = (JᵀJ + λLᵀL)⁻¹ Jᵀ C<sub>mkt</sub>
+<br>
+<span class="comment">// J = ∂BS/∂σ (Vega),  L = finite-difference gradient operator</span>
+    </div>
+
+  </section>
+
+  <!-- STACK -->
+  <section>
+    <div class="section-label">Stack & References</div>
+    <div class="stack-list" style="margin-bottom: 2rem;">
+      <div class="stack-row">
+        <span class="stack-key">Languages</span>
+        <span class="stack-val">Python 3.11, MATLAB (prior CT project)</span>
+      </div>
+      <div class="stack-row">
+        <span class="stack-key">Libraries</span>
+        <span class="stack-val">NumPy, SciPy, Matplotlib</span>
+      </div>
+      <div class="stack-row">
+        <span class="stack-key">Write-up</span>
+        <span class="stack-val">LaTeX (4–6 page technical paper)</span>
+      </div>
+    </div>
+    <div class="stack-list">
+      <div class="stack-row">
+        <span class="stack-key">Stoch. calc.</span>
+        <span class="stack-val">Øksendal, <em>Stochastic Differential Equations</em>, ch. 2, 4</span>
+      </div>
+      <div class="stack-row">
+        <span class="stack-key">Probability</span>
+        <span class="stack-val">Ross, <em>Introduction to Probability Models</em>, ch. 1, 3, 4</span>
+      </div>
+      <div class="stack-row">
+        <span class="stack-key">LSM paper</span>
+        <span class="stack-val">Longstaff & Schwartz (2001), <em>Review of Financial Studies</em></span>
+      </div>
+      <div class="stack-row">
+        <span class="stack-key">Local vol</span>
+        <span class="stack-val">Dupire (1994); Gatheral, <em>The Volatility Surface</em></span>
+      </div>
+      <div class="stack-row">
+        <span class="stack-key">Options</span>
+        <span class="stack-val">Wilmott, <em>Paul Wilmott on Quantitative Finance</em>, ch. 3–4, 16</span>
+      </div>
+      <div class="stack-row">
+        <span class="stack-key">Stopping</span>
+        <span class="stack-val">Peskir & Shiryaev, <em>Optimal Stopping and Free-Boundary Problems</em>, ch. 1</span>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    <div class="footer-inner">
+      <span class="footer-note">Nick Kyriakides-Crowe · USC Applied Mathematics MS</span>
+      <a class="footer-link" href="https://nkcrowe.github.io">← Back to portfolio</a>
+    </div>
+  </footer>
+
+</div>
+</body>
+</html>
